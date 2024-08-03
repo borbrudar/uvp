@@ -15,15 +15,19 @@ RECEPTI_SESTAVINE_PREFIX = "data/recepti_sestavine/"
 GET_TIMEOUT = 3
 
 # helper funkcija za pomoc pri zapisu v csv
+
+
 def arr_to_csv(arr):
     r = str()
     for i in arr:
-        r += str(i).replace(",",";") # robustnost
+        r += str(i).replace(",", ";")  # robustnost
         r += " , "
     r = r.removesuffix(" , ") + "\n"
     return r
 
 # Dobimo url naslove prvih 1000 receptov
+
+
 def get_recepti_urls():
     print("Parsam recepte:")
     f = open("data/" + RECEPTI_URLS, "x")
@@ -92,41 +96,47 @@ def recept_skupno(soup):
     for a in soup.find_all("div", {"class": "flex relative p-16 transition hover:bg-[rgba(0,0,0,.02)]"}):
         dolzina_navodil += len(str(a.text))
 
-    f.write(arr_to_csv([avtor,tezavnost,cas_priprave,cas_kuhanja,skupen_cas,dolzina_navodil]))
+    arr = [avtor, tezavnost, cas_priprave,
+           cas_kuhanja, skupen_cas, dolzina_navodil]
+    arr += recept_hranilne(soup)
+    f.write(arr_to_csv(arr))
     f.close()
 
 
-
 # doloci sestavine recepta in jih zapise v lastno datoteko
-def recept_sestavine(soup,filename):
-    f= open(RECEPTI_SESTAVINE_PREFIX + filename, "w")
+def recept_sestavine(soup, filename):
+    f = open(RECEPTI_SESTAVINE_PREFIX + filename, "w")
     f.write("Ime sestavine, Kolicina, Enota\n")
     # najprej ugotovimo za koliko oseb je recept
     stevilo_oseb = 1
     for a in soup.find_all("span"):
         if a.text == "Sestavine za":
-            sp = str(a.parent).split() 
+            sp = str(a.parent).split()
             for i in sp:
                 if "placeholder=" in i:
-                    stevilo_oseb = int(i.removeprefix("placeholder=\"").removesuffix("\""))    
+                    stevilo_oseb = int(i.removeprefix(
+                        "placeholder=\"").removesuffix("\""))
                     break
-    #for a in soup.find_all("span", {"class" : "ingredientQuantity"}):
-    
+    # for a in soup.find_all("span", {"class" : "ingredientQuantity"}):
+
     # nato gremo cez vse sestavine in popravimo kolicine glede na stevilo oseb
-    for a in soup.find_all("div", {"class" : "w-2/3 md:4/5 lg:w-2/3 p-8 leading-normal flex items-center"}):    
+    for a in soup.find_all("div", {"class": "w-2/3 md:4/5 lg:w-2/3 p-8 leading-normal flex items-center"}):
         ime_sestavine = a.string
         enota = "kos"
         # obcasno se zgodi da sestavine nima enote (v tem primeru defaultamo na 1)
         if "ingredientQuantity" in str(a.parent):
-            c=  a.parent.find("span", {"class", "ingredientQuantity"})
+            c = a.parent.find("span", {"class", "ingredientQuantity"})
             kolicina = float(c.string)/stevilo_oseb
             # najdemo enoto, ce obstaja
             if "<span>" in str(c.parent):
                 for t in c.parent.find_all("span", class_=None):
-                    enota_tmp = str(t).removeprefix("<span>").removesuffix("</span>").strip()
+                    enota_tmp = str(t).removeprefix(
+                        "<span>").removesuffix("</span>").strip()
                     # enote standariziramo na g in l
-                    if enota_tmp == "g": enota = "g"
-                    elif enota_tmp == "l": enota = "l"
+                    if enota_tmp == "g":
+                        enota = "g"
+                    elif enota_tmp == "l":
+                        enota = "l"
                     elif enota_tmp == "kg":
                         enota = "g"
                         kolicina *= 1000
@@ -137,33 +147,75 @@ def recept_sestavine(soup,filename):
                         enota = "l"
                         kolicina /= 10
                     break
-        else: kolicina = 1 
-        f.write(arr_to_csv([ime_sestavine,kolicina,enota]))
+        else:
+            kolicina = 1
+        f.write(arr_to_csv([ime_sestavine, kolicina, enota]))
     f.close()
+
+
+# pomozna funkija, ki pridobi hranilne kolicine
+def get_hranilno(hranilna, row):
+    r = 0
+    row = str(row)
+    while row.startswith(hranilna) == False and len(row) > len(hranilna):
+        row = row[1:]
+    vals = row.removeprefix(hranilna).split()
+    # poseben primer za ogljikove hidrate in mascobe (quirk tabele)
+    for i in vals:
+        try:
+            if i.startswith("sladkorji"):
+                i = i.removeprefix("sladkorji")
+            if i.startswith("kisline"):
+                i = i.removeprefix("kisline")
+            r = float(i)
+            break
+        except ValueError:
+            continue
+    return r
+
+
+# hranilne vrednosti na 100g jedi
+def recept_hranilne(soup):
+    table = soup.find("table").text
+    en_vrednost = get_hranilno("Energijske vrednosti", table)
+    beljakovine = get_hranilno("Beljakovine", table)
+    ogl = get_hranilno("Ogljikovi", table)
+    masc = get_hranilno("Maščobe", table)
+    vlak = get_hranilno("Vlaknine", table)
+    vita = get_hranilno("Vitamin A", table)
+    vitb1 = get_hranilno("Vitamin B1", table)
+    vitc = get_hranilno("Vitamin C", table)
+    vitd = get_hranilno("Vitamin D", table)
+    vit = False
+    if vita > 0 or vitb1 > 0 or vitc > 0 or vitd > 0:
+        vit = True
+    return [en_vrednost, beljakovine, ogl, masc, vlak, vit]
+
 
 # gre cez vse recepte in jih sparsa
 def recepti_parser():
     print("Parsam recepte:")
     f = open("data/" + RECEPTI, "w")
     f.write(
-        "Avtorji, Tezavnost, Cas priprave, Cas kuhanja, Skupen cas, Dolzina navodil\n")
+        "Avtorji, Tezavnost, Cas priprave, Cas kuhanja, Skupen cas, Dolzina navodil, Energijska vrednost, Beljakovine, Ogljikovi hidrati, Mascobe, Vlaknine, Vitamini\n")
     f.close()
     with open("data/" + RECEPTI_URLS, encoding="UTF8") as file:
         cnt = 1  # stevec progressa
         for line in file:
             url = "https://okusno.je" + line.rstrip()
-            filename = line.rstrip().removeprefix("/recept/") + ".html"
+            filename = line.rstrip().removeprefix("/recept/")
             # preverimo ce ta datoteka ze obstaja in ce, jo preberemo iz diska namesto da po nepotrebnem posiljamo request
             if os.path.exists(RECEPTI_HTML_PREFIX + filename) == False:
                 page = requests.get(url, timeout=GET_TIMEOUT)
-                f = open(RECEPTI_HTML_PREFIX + filename, "w")
+                f = open(RECEPTI_HTML_PREFIX + filename + ".html", "w")
                 f.write(page.text)
                 f.close()
-            html_doc = open(RECEPTI_HTML_PREFIX + filename, "rb").read()
+            html_doc = open(RECEPTI_HTML_PREFIX +
+                            filename + ".html", "rb").read()
             soup = BeautifulSoup(html_doc, "html.parser")
-            # sparsamo recept, skupne lasntosti zapisemo v skupen csv, sestavine pa v lastno datoteko
+            # sparsamo recept, skupne lasntosti zapisemo v skupen csv, sestavine/hranilne vrednosti pa v lastne datoteke
             recept_skupno(soup)
-            recept_sestavine(soup,filename.removesuffix(".html") + ".csv")
+            recept_sestavine(soup, filename + ".csv")
             # sprintej progress
             print("[" + str((cnt/1000) * 100) + "%]")
             cnt += 1
