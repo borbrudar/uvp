@@ -9,13 +9,21 @@ import time
 RECEPTI_URLS = "recepti_urls"
 RECEPTI = "recepti.csv"
 RECEPTI_HTML_PREFIX = "data/recepti_html/"
+RECEPTI_SESTAVINE_PREFIX = "data/recepti_sestavine/"
 
 # Timeout za gettanje strani
 GET_TIMEOUT = 3
 
+# helper funkcija za pomoc pri zapisu v csv
+def arr_to_csv(arr):
+    r = str()
+    for i in arr:
+        r += str(i).replace(",",";") # robustnost
+        r += " , "
+    r = r.removesuffix(" , ") + "\n"
+    return r
+
 # Dobimo url naslove prvih 1000 receptov
-
-
 def get_recepti_urls():
     print("Parsam recepte:")
     f = open("data/" + RECEPTI_URLS, "x")
@@ -84,16 +92,54 @@ def recept_skupno(soup):
     for a in soup.find_all("div", {"class": "flex relative p-16 transition hover:bg-[rgba(0,0,0,.02)]"}):
         dolzina_navodil += len(str(a.text))
 
-    f.write(str(avtor) + " , " + str(tezavnost) + " , " + str(cas_priprave) + " , " +
-            str(cas_kuhanja) + " , " + str(skupen_cas) + " , " + str(dolzina_navodil) + "\n")
+    f.write(arr_to_csv([avtor,tezavnost,cas_priprave,cas_kuhanja,skupen_cas,dolzina_navodil]))
     f.close()
 
-# doloci sestavine recepta in jih zapise v lasnto datoteko
 
 
-def recept_sestavine(soup):
-    return False
-
+# doloci sestavine recepta in jih zapise v lastno datoteko
+def recept_sestavine(soup,filename):
+    f= open(RECEPTI_SESTAVINE_PREFIX + filename, "w")
+    f.write("Ime sestavine, Kolicina, Enota\n")
+    # najprej ugotovimo za koliko oseb je recept
+    stevilo_oseb = 1
+    for a in soup.find_all("span"):
+        if a.text == "Sestavine za":
+            sp = str(a.parent).split() 
+            for i in sp:
+                if "placeholder=" in i:
+                    stevilo_oseb = int(i.removeprefix("placeholder=\"").removesuffix("\""))    
+                    break
+    #for a in soup.find_all("span", {"class" : "ingredientQuantity"}):
+    
+    # nato gremo cez vse sestavine in popravimo kolicine glede na stevilo oseb
+    for a in soup.find_all("div", {"class" : "w-2/3 md:4/5 lg:w-2/3 p-8 leading-normal flex items-center"}):    
+        ime_sestavine = a.string
+        enota = "kos"
+        # obcasno se zgodi da sestavine nima enote (v tem primeru defaultamo na 1)
+        if "ingredientQuantity" in str(a.parent):
+            c=  a.parent.find("span", {"class", "ingredientQuantity"})
+            kolicina = float(c.string)/stevilo_oseb
+            # najdemo enoto, ce obstaja
+            if "<span>" in str(c.parent):
+                for t in c.parent.find_all("span", class_=None):
+                    enota_tmp = str(t).removeprefix("<span>").removesuffix("</span>").strip()
+                    # enote standariziramo na g in l
+                    if enota_tmp == "g": enota = "g"
+                    elif enota_tmp == "l": enota = "l"
+                    elif enota_tmp == "kg":
+                        enota = "g"
+                        kolicina *= 1000
+                    elif enota_tmp == "mg":
+                        enota = "g"
+                        kolicina /= 1000
+                    elif enota_tmp == "dl":
+                        enota = "l"
+                        kolicina /= 10
+                    break
+        else: kolicina = 1 
+        f.write(arr_to_csv([ime_sestavine,kolicina,enota]))
+    f.close()
 
 # gre cez vse recepte in jih sparsa
 def recepti_parser():
@@ -117,7 +163,7 @@ def recepti_parser():
             soup = BeautifulSoup(html_doc, "html.parser")
             # sparsamo recept, skupne lasntosti zapisemo v skupen csv, sestavine pa v lastno datoteko
             recept_skupno(soup)
-            recept_sestavine(soup)
+            recept_sestavine(soup,filename.removesuffix(".html") + ".csv")
             # sprintej progress
             print("[" + str((cnt/1000) * 100) + "%]")
             cnt += 1
