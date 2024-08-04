@@ -1,14 +1,14 @@
-Ime sestavine, Kolicina, Enota
-jajc , 0.6 , kos
-sladkorja , 12.0 , g
-mleka , 0.01 , l
-olja , 0.01 , l
-soli , 0.1 , kos
-moke , 12.0 , g
-pecilnega praška , 0.1 , kos
-zamrznjenih gozdnih sadežev , 40.0 , g
-sladkorja , 0.4 , kos
-sok polovice limone , 1 , kos
-mascarponeja , 50.0 , g
-sladke smetane , 0.03 , l
-sladkorja v prahu , 0.2 , kos
+Ime sestavine,Kolicina,Enota
+jajc,0.6,kos
+sladkorja,12.0,g
+mleka,0.01,l
+olja,0.01,l
+soli,0.1,kos
+moke,12.0,g
+pecilnega praška,0.1,kos
+zamrznjenih gozdnih sadežev,40.0,g
+sladkorja,0.4,kos
+sok polovice limone,1,kos
+mascarponeja,50.0,g
+sladke smetane,0.03,l
+sladkorja v prahu,0.2,kos

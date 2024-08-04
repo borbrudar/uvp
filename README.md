@@ -13,7 +13,15 @@ python -m venv env
 source env/bin/activate
 ```
 [Ch]e se nimate nalo[zh]enih dependicijev jih nalo[zh]te preko `pip`-a v virtualno okolje (lahko pa tudi globalno).
-Potrebni so `requests`, `beautifulsoup4`, `pandas` ter `numpy`. Za scrapanje in analizo sta na volji dve python datoteki, in sicer
+Potrebni so:
+* `requests`
+* `beautifulsoup4`
+* `pandas`
+* `numpy`
+* `matplotlib`
+* `seaborn` 
+
+Za scrapanje in analizo sta na volji dve python datoteki, in sicer
 `mercator_scraper.py` in pa `okusno_scraper.py`. Kot imeni navajajo sta namenjeni obdelavi mercatorjeve spletne strani in pa okusno.je.
 Datoteki lahko po[zh]ente s:
 ```

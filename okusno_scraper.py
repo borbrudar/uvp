@@ -44,18 +44,6 @@ def recept_skupno(soup):
         if "avtor" in str(a):
             avtor = a.text
             break
-    # Najdi tezavnost (zlo hacky)
-    tezavnost = 0
-    t1 = str(soup.find("div", {"class": "flex flex-row items-center gap-4 difficulty difficulty-large difficulty-1 border-b border-black/10 dark:border-white/10 flex h-full items-center justify-center md:border-b-0 md:border-r md:py-0 md:w-1/4 px-32 py-16 w-full"}))
-    t2 = str(soup.find("div", {"class": "flex flex-row items-center gap-4 difficulty difficulty-large difficulty-2 border-b border-black/10 dark:border-white/10 flex h-full items-center justify-center md:border-b-0 md:border-r md:py-0 md:w-1/4 px-32 py-16 w-full"}))
-    t3 = str(soup.find("div", {"class": "flex flex-row items-center gap-4 difficulty difficulty-large difficulty-3 border-b border-black/10 dark:border-white/10 flex h-full items-center justify-center md:border-b-0 md:border-r md:py-0 md:w-1/4 px-32 py-16 w-full"}))
-    if t1 is not None:
-        tezavnost = 1
-    elif t2 is not None:
-        tezavnost = 2
-    elif t3 is not None:
-        tezavnost = 3
-
     # Dolzina priprave + kuhanja
     cas_priprave = 9999  # error values
     cas_kuhanja = 9999
@@ -83,7 +71,7 @@ def recept_skupno(soup):
     for a in soup.find_all("div", {"class": "flex relative p-16 transition hover:bg-[rgba(0,0,0,.02)]"}):
         dolzina_navodil += len(str(a.text))
 
-    arr = [avtor, tezavnost, cas_priprave,
+    arr = [avtor, cas_priprave,
            cas_kuhanja, skupen_cas, dolzina_navodil]
     arr += recept_hranilne(soup)
     f.write(ut.arr_to_csv(arr))
@@ -93,7 +81,7 @@ def recept_skupno(soup):
 # doloci sestavine recepta in jih zapise v lastno datoteko
 def recept_sestavine(soup, filename):
     f = open(RECEPTI_SESTAVINE_PREFIX + filename, "w")
-    f.write("Ime sestavine, Kolicina, Enota\n")
+    f.write("Ime sestavine,Kolicina,Enota\n")
     # najprej ugotovimo za koliko oseb je recept
     stevilo_oseb = 1
     for a in soup.find_all("span"):
@@ -165,7 +153,7 @@ def recepti_parser():
     print("Parsam recepte:")
     csv = open("data/" + RECEPTI, "w")
     csv.write(
-        "Avtorji, Tezavnost, Cas priprave, Cas kuhanja, Skupen cas, Dolzina navodil, Energijska vrednost, Beljakovine, Ogljikovi hidrati, Mascobe, Vlaknine, Vitamin D\n")
+        "Avtorji,Cas priprave,Cas kuhanja,Skupen cas,Dolzina navodil,Energijska vrednost,Beljakovine,Ogljikovi hidrati,Mascobe,Vlaknine,Vitamin D\n")
     csv.close()
     data_in =  open("data/" + RECEPTI_URLS, encoding="UTF8")
     cnt = 1  # stevec progressa

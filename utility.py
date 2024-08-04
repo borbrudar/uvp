@@ -9,8 +9,8 @@ def arr_to_csv(arr):
     r = str()
     for i in arr:
         r += str(i).replace(",", ";")  # robustnost
-        r += " , "
-    r = r.removesuffix(" , ") + "\n"
+        r += ","
+    r = r.removesuffix(",") + "\n"
     return r
 
 def pretvori_enote(enota_tmp,enota,kolicina):

@@ -1,16 +1,16 @@
-Ime sestavine, Kolicina, Enota
-mleka , 0.1 , l
-soli , 0.125 , kos
-masla , 12.5 , g
-moke , 50.0 , g
-masla , 0.25 , kos
-moke , 0.25 , kos
-mleka , 0.0375 , l
-soli , 0.25 , kos
-muškatnega oreščka , 0.25 , kos
-rumenjak , 0.25 , kos
-kuhane šunke , 25.0 , g
-naribane mocarele , 25.0 , g
-jajci , 0.5 , kos
-soli , 0.25 , kos
-krušne drobtine , 1 , kos
+Ime sestavine,Kolicina,Enota
+mleka,0.1,l
+soli,0.125,kos
+masla,12.5,g
+moke,50.0,g
+masla,0.25,kos
+moke,0.25,kos
+mleka,0.0375,l
+soli,0.25,kos
+muškatnega oreščka,0.25,kos
+rumenjak,0.25,kos
+kuhane šunke,25.0,g
+naribane mocarele,25.0,g
+jajci,0.5,kos
+soli,0.25,kos
+krušne drobtine,1,kos
