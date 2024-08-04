@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import requests
 import random as r
 import time
+import utility as ut
+
 
 # Imena datotek
 RECEPTI_URLS = "recepti_urls"
@@ -11,30 +13,15 @@ RECEPTI = "recepti.csv"
 RECEPTI_HTML_PREFIX = "data/recepti_html/"
 RECEPTI_SESTAVINE_PREFIX = "data/recepti_sestavine/"
 
-# Timeout za gettanje strani
-GET_TIMEOUT = 3
-
-# helper funkcija za pomoc pri zapisu v csv
-
-
-def arr_to_csv(arr):
-    r = str()
-    for i in arr:
-        r += str(i).replace(",", ";")  # robustnost
-        r += " , "
-    r = r.removesuffix(" , ") + "\n"
-    return r
-
 # Dobimo url naslove prvih 1000 receptov
 
-
 def get_recepti_urls():
-    print("Parsam recepte:")
+    print("Parsam url-je receptov:")
     f = open("data/" + RECEPTI_URLS, "x")
     # Loopamo cez prvih 50 strani (vsaka stran ima po 20 receptov), da dobimo url naslove vseh receptov
     recepti_iskanje_url = "https://okusno.je/iskanje?t=recipe&sort=score&p="
     for i in range(1, 51):
-        page = requests.get(recepti_iskanje_url + str(i), timeout=GET_TIMEOUT)
+        page = requests.get(recepti_iskanje_url + str(i), timeout=ut.GET_TIMEOUT)
         soup = BeautifulSoup(page.content, "html.parser")
         for u in soup.find_all("a", href=True):
             if str(u['href']).startswith("/recept/"):
@@ -99,7 +86,7 @@ def recept_skupno(soup):
     arr = [avtor, tezavnost, cas_priprave,
            cas_kuhanja, skupen_cas, dolzina_navodil]
     arr += recept_hranilne(soup)
-    f.write(arr_to_csv(arr))
+    f.write(ut.arr_to_csv(arr))
     f.close()
 
 
@@ -117,7 +104,7 @@ def recept_sestavine(soup, filename):
                     stevilo_oseb = int(i.removeprefix(
                         "placeholder=\"").removesuffix("\""))
                     break
-    # for a in soup.find_all("span", {"class" : "ingredientQuantity"}):
+            break
 
     # nato gremo cez vse sestavine in popravimo kolicine glede na stevilo oseb
     for a in soup.find_all("div", {"class": "w-2/3 md:4/5 lg:w-2/3 p-8 leading-normal flex items-center"}):
@@ -133,23 +120,10 @@ def recept_sestavine(soup, filename):
                     enota_tmp = str(t).removeprefix(
                         "<span>").removesuffix("</span>").strip()
                     # enote standariziramo na g in l
-                    if enota_tmp == "g":
-                        enota = "g"
-                    elif enota_tmp == "l":
-                        enota = "l"
-                    elif enota_tmp == "kg":
-                        enota = "g"
-                        kolicina *= 1000
-                    elif enota_tmp == "mg":
-                        enota = "g"
-                        kolicina /= 1000
-                    elif enota_tmp == "dl":
-                        enota = "l"
-                        kolicina /= 10
-                    break
+                    enota,kolicina = ut.pretvori_enote(enota_tmp,enota,kolicina)
         else:
             kolicina = 1
-        f.write(arr_to_csv([ime_sestavine, kolicina, enota]))
+        f.write(ut.arr_to_csv([ime_sestavine, kolicina, enota]))
     f.close()
 
 
@@ -182,48 +156,37 @@ def recept_hranilne(soup):
     ogl = get_hranilno("Ogljikovi", table)
     masc = get_hranilno("Maščobe", table)
     vlak = get_hranilno("Vlaknine", table)
-    vita = get_hranilno("Vitamin A", table)
-    vitb1 = get_hranilno("Vitamin B1", table)
-    vitc = get_hranilno("Vitamin C", table)
     vitd = get_hranilno("Vitamin D", table)
-    vit = False
-    if vita > 0 or vitb1 > 0 or vitc > 0 or vitd > 0:
-        vit = True
-    return [en_vrednost, beljakovine, ogl, masc, vlak, vit]
+    return [en_vrednost, beljakovine, ogl, masc, vlak, vitd]
 
 
 # gre cez vse recepte in jih sparsa
 def recepti_parser():
     print("Parsam recepte:")
-    f = open("data/" + RECEPTI, "w")
-    f.write(
-        "Avtorji, Tezavnost, Cas priprave, Cas kuhanja, Skupen cas, Dolzina navodil, Energijska vrednost, Beljakovine, Ogljikovi hidrati, Mascobe, Vlaknine, Vitamini\n")
-    f.close()
-    with open("data/" + RECEPTI_URLS, encoding="UTF8") as file:
-        cnt = 1  # stevec progressa
-        for line in file:
-            url = "https://okusno.je" + line.rstrip()
-            filename = line.rstrip().removeprefix("/recept/")
-            # preverimo ce ta datoteka ze obstaja in ce, jo preberemo iz diska namesto da po nepotrebnem posiljamo request
-            if os.path.exists(RECEPTI_HTML_PREFIX + filename) == False:
-                page = requests.get(url, timeout=GET_TIMEOUT)
-                f = open(RECEPTI_HTML_PREFIX + filename + ".html", "w")
-                f.write(page.text)
-                f.close()
-            html_doc = open(RECEPTI_HTML_PREFIX +
-                            filename + ".html", "rb").read()
-            soup = BeautifulSoup(html_doc, "html.parser")
-            # sparsamo recept, skupne lasntosti zapisemo v skupen csv, sestavine/hranilne vrednosti pa v lastne datoteke
-            recept_skupno(soup)
-            recept_sestavine(soup, filename + ".csv")
-            # sprintej progress
-            print("[" + str((cnt/1000) * 100) + "%]")
+    csv = open("data/" + RECEPTI, "w")
+    csv.write(
+        "Avtorji, Tezavnost, Cas priprave, Cas kuhanja, Skupen cas, Dolzina navodil, Energijska vrednost, Beljakovine, Ogljikovi hidrati, Mascobe, Vlaknine, Vitamin D\n")
+    csv.close()
+    data_in =  open("data/" + RECEPTI_URLS, encoding="UTF8")
+    cnt = 1  # stevec progressa
+    for line in data_in:
+        url = "https://okusno.je" + line.rstrip()
+        filename = line.rstrip().removeprefix("/recept/")
+        try:
+            ut.get_spletno_stran(url,RECEPTI_HTML_PREFIX + filename + ".html")
+        except:
             cnt += 1
-            # spi za nekaj sekund
-            time.sleep(r.randrange(1, 3))
-            if cnt > 10:
-                break
-
+            print("[SKIPPED]")
+            continue        
+        html_doc = open(RECEPTI_HTML_PREFIX +
+                        filename + ".html", "rb").read()
+        soup = BeautifulSoup(html_doc, "html.parser")
+        # sparsamo recept, skupne lasntosti zapisemo v skupen csv, sestavine/hranilne vrednosti pa v lastne datoteke
+        recept_skupno(soup)
+        recept_sestavine(soup, filename + ".csv")
+        # sprintej progress
+        print("[" + str((cnt/1000) * 100) + "%]")
+        cnt += 1
 
 def main():
     if os.path.exists("data/" + RECEPTI_URLS) == False:
