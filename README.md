@@ -30,7 +30,7 @@ python okusno_scraper.py
 ```
 
 Ki bosta pobrali spletne strani ter jih obdelali ter shranili v `data` direktorij. Lokacijo shrambe je mogo[ch]e nastaviti preko
-spremenljivk na vrhu `mercator_scraper.py` oz. `mercator_scraper.py`
+spremenljivk na vrhu `mercator_scraper.py` oz. `okusno_scraper.py`
 
 ## Analiza 
 

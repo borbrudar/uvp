@@ -153,7 +153,7 @@ def recepti_parser():
     print("Parsam recepte:")
     csv = open("data/" + RECEPTI, "w")
     csv.write(
-        "Avtorji,Cas priprave,Cas kuhanja,Skupen cas,Dolzina navodil,Energijska vrednost,Beljakovine,Ogljikovi hidrati,Mascobe,Vlaknine,Vitamin D\n")
+        "Avtor,Cas priprave,Cas kuhanja,Skupen cas,Dolzina navodil,Energijska vrednost,Beljakovine,Ogljikovi hidrati,Mascobe,Vlaknine,Vitamin D\n")
     csv.close()
     data_in =  open("data/" + RECEPTI_URLS, encoding="UTF8")
     cnt = 1  # stevec progressa
