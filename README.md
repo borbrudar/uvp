@@ -20,6 +20,7 @@ Potrebni so:
 * `numpy`
 * `matplotlib`
 * `seaborn` 
+* `wordcloud`
 
 Za scrapanje in analizo sta na volji dve python datoteki, in sicer
 `mercator_scraper.py` in pa `okusno_scraper.py`. Kot imeni navajajo sta namenjeni obdelavi mercatorjeve spletne strani in pa okusno.je.

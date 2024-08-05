@@ -25,8 +25,10 @@ def parse_izdelke(soup):
         if len(last) > 0: last = last[-1]
         else: last = "kos"
         enota,kolicina = ut.pretvori_enote(last,enota,kolicina)
+        # dobimo se kategorijo 
+        kategorija = izdelek["data-formatted-categories"].split(";")[-1]
         # appendamo izdelke v csv datoteko
-        csv.write(ut.arr_to_csv([ime,znamka,cena,akcija,kolicina,enota]))
+        csv.write(ut.arr_to_csv([ime,znamka,cena,akcija,kolicina,enota,kategorija]))
 
 
 def main():
@@ -34,7 +36,7 @@ def main():
     base_url = "https://www.mercatoronline.si/sl/search?ipp=75&page="
     cnt = 1
     csv = open(IZDELKI,'w')
-    csv.write("Ime izdelka,Znamka,Cena,Promocijska cena,Kolicina,Enota\n")
+    csv.write("Ime izdelka,Znamka,Cena,Promocijska cena,Kolicina,Enota,Kategorija\n")
     csv.close()
     for i in range(1,207): # 207
         filename = "izdelki" + str(i) + ".html"

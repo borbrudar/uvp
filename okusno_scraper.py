@@ -35,8 +35,10 @@ def get_recepti_urls():
 
 
 # doloci skupne lastnosti vseh receptov in jih zapise v skupen csv
-def recept_skupno(soup):
+def recept_skupno(soup, filename):
     f = open("data/" + RECEPTI, "a")  # odpremo skupen csv file
+    # najdemo ime jedi
+    ime = soup.find("h1", {"class" :"font-bold text-secondary dark:text-white text-20 md:text-28 leading-normal pt-0 p-16 md:pb-0 md:p-32 pb-0 bg-white dark:bg-slate-800 rounded-t-lg"}).text
     # Najdi avtorja
     avtor = "Brez"
     for a in soup.find_all("a", href=True):
@@ -71,12 +73,12 @@ def recept_skupno(soup):
     for a in soup.find_all("div", {"class": "flex relative p-16 transition hover:bg-[rgba(0,0,0,.02)]"}):
         dolzina_navodil += len(str(a.text))
 
-    arr = [avtor, cas_priprave,
+    arr = [ime, avtor, cas_priprave,
            cas_kuhanja, skupen_cas, dolzina_navodil]
     arr += recept_hranilne(soup)
+    arr.append(filename)
     f.write(ut.arr_to_csv(arr))
     f.close()
-
 
 # doloci sestavine recepta in jih zapise v lastno datoteko
 def recept_sestavine(soup, filename):
@@ -153,7 +155,7 @@ def recepti_parser():
     print("Parsam recepte:")
     csv = open("data/" + RECEPTI, "w")
     csv.write(
-        "Avtor,Cas priprave,Cas kuhanja,Skupen cas,Dolzina navodil,Energijska vrednost,Beljakovine,Ogljikovi hidrati,Mascobe,Vlaknine,Vitamin D\n")
+        "Ime jedi,Avtor,Cas priprave,Cas kuhanja,Skupen cas,Dolzina navodil,Energijska vrednost,Beljakovine,Ogljikovi hidrati,Mascobe,Vlaknine,Vitamin D,CSV\n")
     csv.close()
     data_in =  open("data/" + RECEPTI_URLS, encoding="UTF8")
     cnt = 1  # stevec progressa
@@ -170,7 +172,7 @@ def recepti_parser():
                         filename + ".html", "rb").read()
         soup = BeautifulSoup(html_doc, "html.parser")
         # sparsamo recept, skupne lasntosti zapisemo v skupen csv, sestavine/hranilne vrednosti pa v lastne datoteke
-        recept_skupno(soup)
+        ime = recept_skupno(soup,filename)
         recept_sestavine(soup, filename + ".csv")
         # sprintej progress
         print("[" + str((cnt/1000) * 100) + "%]")
