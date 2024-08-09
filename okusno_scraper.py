@@ -5,19 +5,14 @@ import requests
 import random as r
 import time
 import utility as ut
+import paths as p
 
-
-# Imena datotek
-RECEPTI_URLS = "recepti_urls"
-RECEPTI = "recepti.csv"
-RECEPTI_HTML_PREFIX = "data/recepti_html/"
-RECEPTI_SESTAVINE_PREFIX = "data/recepti_sestavine/"
 
 # Dobimo url naslove prvih 1000 receptov
 
 def get_recepti_urls():
     print("Parsam url-je receptov:")
-    f = open("data/" + RECEPTI_URLS, "x")
+    f = open(p.URLS_PATH, "x")
     # Loopamo cez prvih 50 strani (vsaka stran ima po 20 receptov), da dobimo url naslove vseh receptov
     recepti_iskanje_url = "https://okusno.je/iskanje?t=recipe&sort=score&p="
     for i in range(1, 51):
@@ -36,7 +31,7 @@ def get_recepti_urls():
 
 # doloci skupne lastnosti vseh receptov in jih zapise v skupen csv
 def recept_skupno(soup, filename):
-    f = open("data/" + RECEPTI, "a")  # odpremo skupen csv file
+    f = open(p.RECEPTI_PATH, "a")  # odpremo skupen csv file
     # najdemo ime jedi
     ime = soup.find("h1", {"class" :"font-bold text-secondary dark:text-white text-20 md:text-28 leading-normal pt-0 p-16 md:pb-0 md:p-32 pb-0 bg-white dark:bg-slate-800 rounded-t-lg"}).text
     # Najdi avtorja
@@ -82,7 +77,7 @@ def recept_skupno(soup, filename):
 
 # doloci sestavine recepta in jih zapise v lastno datoteko
 def recept_sestavine(soup, filename):
-    f = open(RECEPTI_SESTAVINE_PREFIX + filename, "w")
+    f = open(p.SESTAVINE_PREFIX + filename, "w")
     f.write("Ime sestavine,Kolicina,Enota\n")
     # najprej ugotovimo za koliko oseb je recept
     stevilo_oseb = 1
@@ -153,22 +148,22 @@ def recept_hranilne(soup):
 # gre cez vse recepte in jih sparsa
 def recepti_parser():
     print("Parsam recepte:")
-    csv = open("data/" + RECEPTI, "w")
+    csv = open(p.RECEPTI_PATH, "w")
     csv.write(
         "Ime jedi,Avtor,Cas priprave,Cas kuhanja,Skupen cas,Dolzina navodil,Energijska vrednost,Beljakovine,Ogljikovi hidrati,Mascobe,Vlaknine,Vitamin D,CSV\n")
     csv.close()
-    data_in =  open("data/" + RECEPTI_URLS, encoding="UTF8")
+    data_in =  open(p.URLS_PATH, encoding="UTF8")
     cnt = 1  # stevec progressa
     for line in data_in:
         url = "https://okusno.je" + line.rstrip()
         filename = line.rstrip().removeprefix("/recept/")
         try:
-            ut.get_spletno_stran(url,RECEPTI_HTML_PREFIX + filename + ".html")
+            ut.get_spletno_stran(url,p.RECEPTI_HTML_PREFIX + filename + ".html")
         except:
             cnt += 1
             print("[SKIPPED]")
             continue        
-        html_doc = open(RECEPTI_HTML_PREFIX +
+        html_doc = open(p.RECEPTI_HTML_PREFIX +
                         filename + ".html", "rb").read()
         soup = BeautifulSoup(html_doc, "html.parser")
         # sparsamo recept, skupne lasntosti zapisemo v skupen csv, sestavine/hranilne vrednosti pa v lastne datoteke
@@ -179,7 +174,7 @@ def recepti_parser():
         cnt += 1
 
 def main():
-    if os.path.exists("data/" + RECEPTI_URLS) == False:
+    if os.path.exists(p.URLS_PATH) == False:
         get_recepti_urls()
     recepti_parser()
 
