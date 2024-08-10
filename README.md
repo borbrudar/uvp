@@ -12,8 +12,9 @@ cd uvp
 python -m venv env
 source env/bin/activate
 ```
-Če se nimate naloženih dependicijev jih naložte preko `pip`-a v virtualno okolje (lahko pa tudi globalno).
-Potrebni so:
+
+Potrebne dependencije lahko naložite z uporabo `pip install -r requirements.txt`, kar bo preneslo tudi vse potrebno za ogled `analize.ipynb`.
+Če želite potrebne pakete naložiti ročno, boste načeloma potrebovali le:
 * `requests`
 * `beautifulsoup4`
 * `pandas`
