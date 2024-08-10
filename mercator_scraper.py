@@ -35,7 +35,8 @@ def parse_izdelke(soup):
         ]  # hevristicno locimo
         # appendamo izdelke v csv datoteko
         csv.write(
-            ut.arr_to_csv([ime, znamka, cena, akcija, kolicina, enota, kategorija])
+            ut.arr_to_csv([ime, znamka, cena, akcija,
+                          kolicina, enota, kategorija])
         )
 
 
@@ -49,12 +50,13 @@ def main():
     print("Mercator parse:")
     for i in range(1, 207):  # 206 strani je ob casu scrapanja
         filename = "izdelki" + str(i) + ".html"
-        ut.get_spletno_stran(base_url + str(i), p.IZDELKI_HTML_PREFIX + filename)
+        ut.get_spletno_stran(
+            base_url + str(i), p.IZDELKI_HTML_PREFIX + filename)
         html_doc = open(p.IZDELKI_HTML_PREFIX + filename, "rb").read()
         soup = BeautifulSoup(html_doc, "html.parser")
         parse_izdelke(soup)
         # sprintej progress
-        print("[" + "{:.2f}".format(str((cnt / 206) * 100)) + "%]")
+        print("[" + "{:.2f}".format((cnt / 206) * 100) + "%]")
         cnt += 1
 
 

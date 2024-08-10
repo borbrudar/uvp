@@ -165,3 +165,7 @@ cython_debug/
 .vscode/
 main
 CMakeLists.txt
+sinteza
+*.html
+*/*.html
+*/*/*.html
