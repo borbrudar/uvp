@@ -13,13 +13,14 @@ python -m venv env
 source env/bin/activate
 ```
 
-Potrebne dependencije lahko naložite z uporabo `pip install -r requirements.txt`, kar bo preneslo tudi vse potrebno za ogled `analize.ipynb`.
-Če želite potrebne pakete naložiti ročno, boste načeloma potrebovali le:
+Potrebne dependencije lahko naložite z uporabo `pip install -r requirements.txt`.
+Če želite potrebne pakete naložiti ročno, boste potrebovali:
 * `requests`
 * `beautifulsoup4`
 * `pandas`
 * `numpy`
 * `matplotlib`
+* `matplotlib-inline`
 * `seaborn` 
 * `wordcloud`
 
