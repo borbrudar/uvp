@@ -1,10 +1,14 @@
 import requests
-import time,os,random as r
+import time
+import os
+import random as r
 
 # Timeout za gettanje strani
 GET_TIMEOUT = 10
 
 # helper funkcija za pomoc pri zapisu v csv
+
+
 def arr_to_csv(arr):
     r = str()
     for i in arr:
@@ -13,7 +17,8 @@ def arr_to_csv(arr):
     r = r.removesuffix(",") + "\n"
     return r
 
-def pretvori_enote(enota_tmp,enota,kolicina):
+
+def pretvori_enote(enota_tmp, enota, kolicina):
     # enote standariziramo na g in l
     if enota_tmp == "g":
         enota = "g"
@@ -31,14 +36,15 @@ def pretvori_enote(enota_tmp,enota,kolicina):
     elif enota_tmp == "ml":
         enota = "l"
         kolicina /= 1000
-    return (enota,kolicina)
-        
-        
-def get_spletno_stran(url,path):
-    # preverimo ce ta datoteka ze obstaja in ce, jo preberemo iz diska namesto da po nepotrebnem posiljamo request 
-    if os.path.exists(path): return
+    return (enota, kolicina)
+
+
+def get_spletno_stran(url, path):
+    # preverimo ce ta datoteka ze obstaja in ce, jo preberemo iz diska namesto da po nepotrebnem posiljamo request
+    if os.path.exists(path):
+        return
     page = requests.get(url, timeout=GET_TIMEOUT)
-    if page.ok == False: 
+    if page.ok == False:
         print("Error getting page")
         print(url)
         raise Exception("BAD URL")
